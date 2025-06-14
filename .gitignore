@@ -1,0 +1,21 @@
+# Ignore all the shared/static/executable objects
+**/*.a
+**/*.o
+**/*.so
+**/*.out
+
+# Ignore all FS metadata
+**/*.DS_Store
+
+# Ignore vim .swp file
+**/*.swp
+
+# Ignore ctags dump
+**/tags
+
+# Ignore vscode tmp files
+**/.vscode
+
+# Ignore temporary files/directories from rust/crate/cargo
+target/
+Cargo.lock

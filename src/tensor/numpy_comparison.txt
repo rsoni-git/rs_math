@@ -1,0 +1,15 @@
+ndarray : Tensor, !tensor
+ndarray.ndim : Tensor::ndim()
+ndarray.shape : Tensor::shape()
+ndarray.strides : Tensor::strides()
+ndarray.data : Tensor::data()
+ndarray.dtype : Tensor::dtype()
+
+ndarray.size : Tensor::length()
+ndarray.itemsize : Tensor::element_size()
+ndarray.max() : Tensor::max()
+ndarray.min() : Tensor::min()
+ndarray.prod() : Tensor::prod()
+ndarray.sum() : Tensor::sum()
+ndarray.mean() : Tensor::min()
+ndarray.std() : Tensor::std()
