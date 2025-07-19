@@ -55,26 +55,3 @@ where
         Ok(true)
     }
 }
-
-impl<'a, F, S> TensorBase<'a, F, S>
-where
-    F: TensorTypeFloat,
-    S: TensorStorage<F> + TensorStorageMut<F>,
-{
-    pub fn softmax(&'a mut self, axis: usize) -> Result<TensorViewMut<'a, F>, Error> {
-        let mut view = self.axis_mut(axis)?;
-        let max = view.max();
-        let mut sum_exps = F::default();
-
-        for val in view.iter_mut() {
-            *val = Float::exp(*val - max);
-            sum_exps += *val;
-        }
-
-        for val in view.iter_mut() {
-            *val = *val / sum_exps
-        }
-
-        Ok(view)
-    }
-}

@@ -50,21 +50,3 @@ fn relu() {
     }
     assert_eq!(tensor_2x2, vec![vec![1, 0, 0], vec![0, 5, 0]]);
 }
-
-#[test]
-fn softmax() {
-    pyo3::prepare_freethreaded_python();
-    Python::with_gil(|py| {
-        let mut ts_2x2 =
-            Tensor::<f32>::from_vec(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]).unwrap();
-
-        let ts_2x2 = ts_2x2.softmax(0).unwrap();
-
-        let py_array = py_ndarray::tensor_to_pyarray(py, &ts_2x2).unwrap();
-        let py_scipy = py.import("scipy.special").unwrap();
-        let py_softmax = py_scipy.getattr("softmax").unwrap();
-        let py_result = py_softmax.call1((py_array,)).unwrap();
-        let py_result = py_result.downcast::<PyArrayDyn<f32>>().unwrap();
-        py_ndarray::assert_eq(&ts_2x2, py_result);
-    });
-}
