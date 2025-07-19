@@ -23,12 +23,9 @@ pub trait TensorTypeNumeric:
 {
 }
 
-impl TensorTypeNumeric for i8 {}
 impl TensorTypeNumeric for u8 {}
 impl TensorTypeNumeric for i32 {}
-impl TensorTypeNumeric for u32 {}
 impl TensorTypeNumeric for i64 {}
-impl TensorTypeNumeric for u64 {}
 impl TensorTypeNumeric for f32 {}
 impl TensorTypeNumeric for f64 {}
 
@@ -119,7 +116,7 @@ pub struct TensorIterMut<'a, U> {
     _u: PhantomData<U>,
 }
 
-pub mod tensor_arithmetic;
+pub mod arithmetic;
 pub mod tensor_core;
 pub mod tensor_eq;
 pub mod tensor_error;

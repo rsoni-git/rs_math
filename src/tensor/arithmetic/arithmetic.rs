@@ -1,4 +1,4 @@
-use super::*;
+use crate::tensor::*;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 
 impl<'a, U, S> TensorBase<'a, U, S>
@@ -6,7 +6,7 @@ where
     U: TensorTypeNumeric,
     S: TensorStorage<U>,
 {
-    fn shape_indexes(&self, shape: &'a [usize]) -> impl Iterator<Item = Vec<usize>> + 'a {
+    pub fn shape_indexes(&self, shape: &'a [usize]) -> impl Iterator<Item = Vec<usize>> + 'a {
         let ndim = shape.len();
         let total = shape.iter().product();
 
@@ -20,7 +20,7 @@ where
         })
     }
 
-    fn shape_bc(
+    pub fn shape_bc(
         shape_a: &[usize],
         shape_b: &[usize],
         batch_mul: bool,
@@ -100,7 +100,7 @@ where
     }
 
     #[inline(always)]
-    fn offset(index: &[usize], shape: &[usize], strides: &[usize]) -> usize {
+    pub fn offset(index: &[usize], shape: &[usize], strides: &[usize]) -> usize {
         index
             .iter()
             .zip(shape.iter().zip(strides))

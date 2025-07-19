@@ -568,6 +568,24 @@ where
         })
     }
 
+    pub fn axis_slice_mut(
+        &'a mut self,
+        axis: usize,
+        index: &[usize],
+    ) -> Result<TensorViewMut<'a, U>, Error> {
+        let view = self.axis(axis)?;
+        let (sl_shape, sl_strides, sl_offset) = view.slice_impl(index)?;
+
+        Ok(TensorViewMut {
+            shape: sl_shape,
+            strides: sl_strides,
+            offset: sl_offset,
+            data: self.data.as_mut(),
+            _u: PhantomData,
+            _s: PhantomData,
+        })
+    }
+
     pub fn permute_mut(&'a mut self, axes: &[usize]) -> Result<TensorViewMut<'a, U>, Error> {
         let (shape, strides) = self.permute_impl(axes)?;
 
