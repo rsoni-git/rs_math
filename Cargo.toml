@@ -19,6 +19,6 @@ numpy = "0.25"
 ndarray   = "0.16"
 
 [[bench]]
-name = "tensor_bench"
+name = "add_aarch64"
 harness = false
 
