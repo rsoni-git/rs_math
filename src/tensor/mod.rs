@@ -44,7 +44,7 @@ pub struct TensorBase<'a, U, S> {
     _s: PhantomData<&'a S>,
 }
 
-pub type Tensor<'a, U> = TensorBase<'a, U, Vec<U>>;
+pub type Tensor<'a, U> = TensorBase<'a, U, Vec<U, TensorAllocator>>;
 pub type TensorView<'a, U> = TensorBase<'a, U, &'a [U]>;
 pub type TensorViewMut<'a, U> = TensorBase<'a, U, &'a mut [U]>;
 
@@ -116,7 +116,10 @@ pub struct TensorIterMut<'a, U> {
     _u: PhantomData<U>,
 }
 
+pub struct TensorAllocator;
+
 pub mod arithmetic;
+pub mod tensor_alloc;
 pub mod tensor_core;
 pub mod tensor_eq;
 pub mod tensor_error;

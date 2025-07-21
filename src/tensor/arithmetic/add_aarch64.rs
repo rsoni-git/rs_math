@@ -4,10 +4,9 @@ use core::arch::aarch64::*;
 impl AddAArch64<u8> for u8 {
     fn add_l4(tensor_a: &TensorView<'_, u8>, tensor_b: &TensorView<'_, u8>) -> Tensor<'static, u8> {
         let nelems = tensor_a.nelems();
-        let mut data_c: Vec<u8> = Vec::with_capacity(nelems);
+        let mut data_c: Vec<u8, TensorAllocator> = Vec::with_capacity_in(nelems, TensorAllocator);
         unsafe {
             data_c.set_len(nelems);
-
             let data_a_ptr = tensor_a.data.as_ptr();
             let data_b_ptr = tensor_b.data.as_ptr();
             let data_c_ptr = data_c.as_mut_ptr();
@@ -41,7 +40,7 @@ impl AddAArch64<i32> for i32 {
         tensor_b: &TensorView<'_, i32>,
     ) -> Tensor<'static, i32> {
         let nelems = tensor_a.nelems();
-        let mut data_c: Vec<i32> = Vec::with_capacity(nelems);
+        let mut data_c: Vec<i32, TensorAllocator> = Vec::with_capacity_in(nelems, TensorAllocator);
         unsafe {
             data_c.set_len(nelems);
 
@@ -78,7 +77,7 @@ impl AddAArch64<i64> for i64 {
         tensor_b: &TensorView<'_, i64>,
     ) -> Tensor<'static, i64> {
         let nelems = tensor_a.nelems();
-        let mut data_c: Vec<i64> = Vec::with_capacity(nelems);
+        let mut data_c: Vec<i64, TensorAllocator> = Vec::with_capacity_in(nelems, TensorAllocator);
         unsafe {
             data_c.set_len(nelems);
 
@@ -115,7 +114,7 @@ impl AddAArch64<f32> for f32 {
         tensor_b: &TensorView<'_, f32>,
     ) -> Tensor<'static, f32> {
         let nelems = tensor_a.nelems();
-        let mut data_c: Vec<f32> = Vec::with_capacity(nelems);
+        let mut data_c: Vec<f32, TensorAllocator> = Vec::with_capacity_in(nelems, TensorAllocator);
         unsafe {
             data_c.set_len(nelems);
 
@@ -152,7 +151,7 @@ impl AddAArch64<f64> for f64 {
         tensor_b: &TensorView<'_, f64>,
     ) -> Tensor<'static, f64> {
         let nelems = tensor_a.nelems();
-        let mut data_c: Vec<f64> = Vec::with_capacity(nelems);
+        let mut data_c: Vec<f64, TensorAllocator> = Vec::with_capacity_in(nelems, TensorAllocator);
         unsafe {
             data_c.set_len(nelems);
 

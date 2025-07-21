@@ -119,7 +119,9 @@ where
     pub fn add(&self, tensor_b: &TensorView<'_, U>) -> Result<Tensor<'static, U>, Error> {
         let shape_c = Self::shape_bc(&self.shape, &tensor_b.shape, false)?;
         let strides_c = self.compute_strides(&shape_c);
-        let mut data_c = vec![U::default(); shape_c.iter().product()];
+        let nelems_c = shape_c.iter().product();
+        let mut data_c: Vec<U, TensorAllocator> = Vec::with_capacity_in(nelems_c, TensorAllocator);
+        data_c.resize(nelems_c, U::default());
 
         for index in self.shape_indexes(&shape_c) {
             let offset_a = Self::offset(&index, &self.shape, &self.strides);
@@ -146,7 +148,9 @@ where
     pub fn sub(&self, tensor_b: &TensorView<'_, U>) -> Result<Tensor<'static, U>, Error> {
         let shape_c = Self::shape_bc(&self.shape, &tensor_b.shape, false)?;
         let strides_c = self.compute_strides(&shape_c);
-        let mut data_c = vec![U::default(); shape_c.iter().product()];
+        let nelems_c = shape_c.iter().product();
+        let mut data_c: Vec<U, TensorAllocator> = Vec::with_capacity_in(nelems_c, TensorAllocator);
+        data_c.resize(nelems_c, U::default());
 
         for index in self.shape_indexes(&shape_c) {
             let offset_a = Self::offset(&index, &self.shape, &self.strides);
@@ -188,7 +192,9 @@ where
         let n = shape_c[ndim_c - 1];
         let k = shape_a[ndim_a - 1];
 
-        let mut data_c = vec![U::default(); shape_c.iter().product()];
+        let nelems_c = shape_c.iter().product();
+        let mut data_c: Vec<U, TensorAllocator> = Vec::with_capacity_in(nelems_c, TensorAllocator);
+        data_c.resize(nelems_c, U::default());
 
         for index in self.shape_indexes(&shape_c[..ndim_c - 2]) {
             let base_a = Self::offset(&index, &shape_a[..ndim_a - 2], &strides_a[..ndim_a - 2]);
@@ -254,7 +260,7 @@ where
     S1: TensorStorage<U>,
     S2: TensorStorage<U>,
 {
-    type Output = TensorBase<'static, U, Vec<U>>;
+    type Output = TensorBase<'static, U, Vec<U, TensorAllocator>>;
 
     fn add(self, other: &TensorBase<'_, U, S1>) -> Self::Output {
         // TODO: Use TensorView::from()
@@ -265,7 +271,7 @@ where
                 shape: vec![],
                 strides: vec![],
                 offset: 0,
-                data: vec![],
+                data: Vec::new_in(TensorAllocator),
                 _u: PhantomData,
                 _s: PhantomData,
             },
@@ -279,7 +285,7 @@ where
     S1: TensorStorage<U>,
     S2: TensorStorage<U>,
 {
-    type Output = TensorBase<'static, U, Vec<U>>;
+    type Output = TensorBase<'static, U, Vec<U, TensorAllocator>>;
 
     fn sub(self, other: &TensorBase<'_, U, S1>) -> Self::Output {
         // TODO: Use TensorView::from()
@@ -290,7 +296,7 @@ where
                 shape: vec![],
                 strides: vec![],
                 offset: 0,
-                data: vec![],
+                data: Vec::new_in(TensorAllocator),
                 _u: PhantomData,
                 _s: PhantomData,
             },
@@ -304,7 +310,7 @@ where
     S1: TensorStorage<U>,
     S2: TensorStorage<U>,
 {
-    type Output = TensorBase<'static, U, Vec<U>>;
+    type Output = TensorBase<'static, U, Vec<U, TensorAllocator>>;
 
     fn mul(self, other: &TensorBase<'_, U, S1>) -> Self::Output {
         // TODO: Use TensorView::from()
@@ -315,7 +321,7 @@ where
                 shape: vec![],
                 strides: vec![],
                 offset: 0,
-                data: vec![],
+                data: Vec::new_in(TensorAllocator),
                 _u: PhantomData,
                 _s: PhantomData,
             },
@@ -355,6 +361,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::tensor::TensorAllocator;
+
     use super::{Error, TensorBase};
 
     #[test]
@@ -364,32 +372,40 @@ mod tests {
         // Positive: 1x3 & 1x3: complete match
         let shape_a = vec![3];
         let shape_b = vec![3];
-        let shape_c = TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, false).unwrap();
+        let shape_c =
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, false)
+                .unwrap();
         assert_eq!(shape_c, vec![3]);
 
         // Positive: 1x3 & 1x1: Partial match
         let shape_a = vec![3];
         let shape_b = vec![1];
-        let shape_c = TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, false).unwrap();
+        let shape_c =
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, false)
+                .unwrap();
         assert_eq!(shape_c, vec![3]);
 
         // Positive: 2x3x5 & 2x1x1: Partial match
         let shape_a = vec![2, 3, 5];
         let shape_b = vec![2, 1, 1];
-        let shape_c = TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, false).unwrap();
+        let shape_c =
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, false)
+                .unwrap();
         assert_eq!(shape_c, vec![2, 3, 5]);
 
         // Positive: 2x1x5 & 2x4x1: Mix partial match
         let shape_a = vec![2, 1, 5];
         let shape_b = vec![2, 4, 1];
-        let shape_c = TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, false).unwrap();
+        let shape_c =
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, false)
+                .unwrap();
         assert_eq!(shape_c, vec![2, 4, 5]);
 
         // Negative: 1x3 & 1x4: Mismatch on second dim
         let shape_a = vec![1, 3];
         let shape_b = vec![1, 4];
         assert!(matches!(
-            TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, false),
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, false),
             Err(Error::ShapeMismatchBroadcast { .. })
         ));
 
@@ -397,7 +413,7 @@ mod tests {
         let shape_a = vec![2, 1, 4];
         let shape_b = vec![2, 3, 5];
         assert!(matches!(
-            TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, false),
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, false),
             Err(Error::ShapeMismatchBroadcast { .. })
         ));
 
@@ -406,21 +422,25 @@ mod tests {
         // Positive: (2x3) * (3x2) = 2x2
         let shape_a = vec![2, 3];
         let shape_b = vec![3, 2];
-        let shape_c = TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, true).unwrap();
+        let shape_c =
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, true)
+                .unwrap();
         assert_eq!(shape_c, vec![2, 2]);
 
         // Positive: (1x3x4) * (2x4x3): Partial match on 1st dim
         //                              matrix-match on the remaining two
         let shape_a = vec![1, 3, 4];
         let shape_b = vec![2, 4, 3];
-        let shape_c = TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, true).unwrap();
+        let shape_c =
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, true)
+                .unwrap();
         assert_eq!(shape_c, vec![2, 3, 3]);
 
         // Negative: (2x3) * (2x3)
         let shape_a = vec![2, 3];
         let shape_b = vec![2, 3];
         assert!(matches!(
-            TensorBase::<i32, Vec<i32>>::shape_bc(&shape_a, &shape_b, true),
+            TensorBase::<i32, Vec<i32, TensorAllocator>>::shape_bc(&shape_a, &shape_b, true),
             Err(Error::ShapeMismatchBroadcast { .. })
         ));
     }

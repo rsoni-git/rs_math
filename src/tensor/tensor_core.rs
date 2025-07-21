@@ -2,6 +2,8 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::ops::Range;
 
+use crate::tensor::TensorAllocator;
+
 use super::{
     Error, Tensor, TensorBase, TensorStorage, TensorStorageMut, TensorTypeNumeric, TensorView,
     TensorViewMut,
@@ -10,7 +12,7 @@ use super::{
 pub trait TensorFromNDim<T, U> {
     fn compute_shape(data: &T) -> Vec<usize>;
     fn compute_strides(shape: &[usize]) -> Vec<usize>;
-    fn flatten_data(data: &T, data_flat: &mut Vec<U>);
+    fn flatten_data(data: &T, data_flat: &mut Vec<U, TensorAllocator>);
 }
 
 impl<U: TensorTypeNumeric> TensorFromNDim<U, U> for U {
@@ -22,7 +24,7 @@ impl<U: TensorTypeNumeric> TensorFromNDim<U, U> for U {
         vec![]
     }
 
-    fn flatten_data(data: &U, data_flat: &mut Vec<U>) {
+    fn flatten_data(data: &U, data_flat: &mut Vec<U, TensorAllocator>) {
         data_flat.push(data.clone());
     }
 }
@@ -52,7 +54,7 @@ where
         strides
     }
 
-    fn flatten_data(data: &Vec<T>, data_flat: &mut Vec<U>) {
+    fn flatten_data(data: &Vec<T>, data_flat: &mut Vec<U, TensorAllocator>) {
         for item in data {
             T::flatten_data(item, data_flat);
         }
@@ -67,11 +69,11 @@ where
     where
         T: TensorFromNDim<T, U>,
     {
-        // TODO: Sanity check for data_ndim
-        let mut data = Vec::new();
+        let offset = 0;
         let shape = T::compute_shape(&data_ndim);
         let strides = T::compute_strides(&shape);
-        let offset = 0;
+        let mut data: Vec<U, TensorAllocator> =
+            Vec::with_capacity_in(shape.iter().product(), TensorAllocator);
 
         T::flatten_data(&data_ndim, &mut data);
 
@@ -89,11 +91,10 @@ where
     where
         T: TensorFromNDim<T, U>,
     {
-        // TODO: Sanity check for data_ndim
-        let mut data = Vec::new();
         let shape = T::compute_shape(&data_ndim);
         let strides = T::compute_strides(&shape);
         let offset = 0;
+        let mut data = Vec::with_capacity_in(shape.iter().product(), TensorAllocator);
 
         T::flatten_data(&data_ndim, &mut data);
 
@@ -108,8 +109,9 @@ where
     }
 
     pub fn from_zeros(shape: &[usize]) -> Result<Self, Error> {
-        // TODO: Sanity check for data_ndim
-        let data: Vec<U> = vec![U::default(); shape.iter().product()];
+        let nelems = shape.iter().product();
+        let mut data: Vec<U, TensorAllocator> = Vec::with_capacity_in(nelems, TensorAllocator);
+        data.resize(nelems, U::default());
         let shape = shape.to_vec();
         let strides = <Vec<U> as TensorFromNDim<Vec<U>, U>>::compute_strides(&shape);
         let offset = 0;
@@ -130,18 +132,22 @@ where
         let strides = <Vec<U> as TensorFromNDim<Vec<U>, U>>::compute_strides(&shape);
         let offset = 0;
 
+        let mut data_clone: Vec<U, TensorAllocator> =
+            Vec::with_capacity_in(shape.iter().product(), TensorAllocator);
+        data_clone.extend(data.clone());
+
         Ok(Tensor {
             shape,
             strides,
             offset,
-            data: data.clone(),
+            data: data_clone,
             _u: PhantomData,
             _s: PhantomData,
         })
     }
 }
 
-impl<U: TensorTypeNumeric> TensorStorage<U> for Vec<U> {
+impl<U: TensorTypeNumeric> TensorStorage<U> for Vec<U, TensorAllocator> {
     #[inline(always)]
     fn get(&self, index: usize) -> U {
         self[index]
@@ -162,7 +168,7 @@ impl<'a, U: TensorTypeNumeric> TensorStorage<U> for &'a mut [U] {
     }
 }
 
-impl<U: TensorTypeNumeric> TensorStorageMut<U> for Vec<U> {
+impl<U: TensorTypeNumeric> TensorStorageMut<U> for Vec<U, TensorAllocator> {
     #[inline(always)]
     fn get(&self, index: usize) -> U {
         self[index]
@@ -192,8 +198,11 @@ where
     S: TensorStorage<U>,
 {
     #[inline(always)]
-    pub fn data(&self) -> Vec<U> {
-        self.data.as_ref().to_vec()
+    pub fn data(&self) -> Vec<U, TensorAllocator> {
+        let mut data: Vec<U, TensorAllocator> =
+            Vec::with_capacity_in(self.nelems(), TensorAllocator);
+        data.extend_from_slice(self.data.as_ref());
+        data
     }
 
     #[inline(always)]

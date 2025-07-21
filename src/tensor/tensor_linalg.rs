@@ -20,7 +20,8 @@ impl<'a> Tensor<'a, u8> {
         }
 
         let nclasses = classes.len();
-        let mut data: Vec<u8> = Vec::with_capacity(nlabels * nclasses);
+        let mut data: Vec<u8, TensorAllocator> =
+            Vec::with_capacity_in(nlabels * nclasses, TensorAllocator);
 
         for label in labels {
             let mut label_enc = vec![0u8; nclasses];

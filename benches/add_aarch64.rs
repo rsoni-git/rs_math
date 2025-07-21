@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyModule;
 use pyo3::Python;
 use rs_math::tensor::Tensor;
+use std::env;
 
 #[path = "../tests/utils/ndim_vec.rs"]
 mod ndim_vec;
@@ -13,9 +14,15 @@ mod py_ndarray;
 fn compare_numpy(c: &mut Criterion) {
     pyo3::prepare_freethreaded_python();
     Python::with_gil(|py| {
+        std::env::set_var("OMP_NUM_THREADS", "1");
+        std::env::set_var("OPENBLAS_NUM_THREADS", "1");
+        std::env::set_var("MKL_NUM_THREADS", "1");
+        std::env::set_var("NUMEXPR_NUM_THREADS", "1");
+        std::env::set_var("VECLIB_MAXIMUM_THREADS", "1");
+        let mut group = c.benchmark_group("compare_numpy");
+
         /* Compare dataset performance: 100x10x1 */
 
-        let mut group = c.benchmark_group("compare_numpy");
         let tensor_a = Tensor::from_vec(ndim_vec::ndim_vec_3d::<f32>(&[100, 10, 1], true)).unwrap();
         let tensor_b = Tensor::from_vec(ndim_vec::ndim_vec_3d::<f32>(&[100, 10, 1], true)).unwrap();
         let pyarray_a = py_ndarray::tensor_to_pyarray(py, &tensor_a).unwrap();

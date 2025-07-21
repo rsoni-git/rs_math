@@ -17,7 +17,7 @@ where
     U: TensorTypeNumeric + numpy::Element,
     S: TensorStorage<U> + TensorStorageMut<U>,
 {
-    match ArrayD::from_shape_vec(IxDyn(&tensor.shape()), tensor.data()) {
+    match ArrayD::from_shape_vec(IxDyn(&tensor.shape()), tensor.data().to_vec()) {
         Ok(array) => Ok(array.into_pyarray(py)),
         Err(msg) => Err(PyValueError::new_err(format!(
             "Failed to create array: {} (expected product of shape = {:?})",
