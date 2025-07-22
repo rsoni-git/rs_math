@@ -6,6 +6,27 @@ where
     S: TensorStorage<U>,
 {
     pub fn add_generic(&self, tensor_b: &TensorView<'_, U>) -> Result<Tensor<'static, U>, Error> {
+        let mut data_c = Vec::with_capacity_in(self.nelems(), TensorAllocator);
+        unsafe { data_c.set_len(self.nelems()) };
+
+        for idx in 0..self.nelems() {
+            data_c[idx] = self.data[idx] + tensor_b.data[idx];
+        }
+
+        Ok(Tensor {
+            data: data_c,
+            shape: self.shape(),
+            strides: self.strides(),
+            offset: 0,
+            _u: PhantomData,
+            _s: PhantomData,
+        })
+    }
+
+    pub fn add_generic_bc(
+        &self,
+        tensor_b: &TensorView<'_, U>,
+    ) -> Result<Tensor<'static, U>, Error> {
         let shape_c = Self::shape_bc(&self.shape, &tensor_b.shape, false)?;
         let strides_c = self.compute_strides(&shape_c);
         let nelems_c = shape_c.iter().product();

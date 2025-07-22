@@ -192,7 +192,7 @@ where
             Ok(U::add_l4(&self.view(), tensor_b))
         } else {
             // Temporary until I implement aarch64 add() with broadcasting
-            self.add_generic(tensor_b)
+            self.add_generic_bc(tensor_b)
         }
     }
 }
