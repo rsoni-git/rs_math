@@ -15,7 +15,108 @@ mod ndim_vec;
 #[path = "../tests/utils/py_ndarray.rs"]
 mod py_ndarray;
 
-fn bench_add_aarch64(c: &mut Criterion) {
+// fn bench_add_aarch64_u8(c: &mut Criterion) {
+//     pyo3::prepare_freethreaded_python();
+//     Python::with_gil(|py| {
+//         std::env::set_var("OMP_NUM_THREADS", "1");
+//         std::env::set_var("OPENBLAS_NUM_THREADS", "1");
+//         std::env::set_var("MKL_NUM_THREADS", "1");
+//         std::env::set_var("NUMEXPR_NUM_THREADS", "1");
+//         std::env::set_var("VECLIB_MAXIMUM_THREADS", "1");
+//         let mut group = c.benchmark_group("bench_add_aarch64");
+
+//         /* Compare dataset performance: 100x10x1 */
+//         let tensor_a = Tensor::from_vec(ndim_vec::ndim_vec_3d::<u8>(&[100, 10, 1], true)).unwrap();
+//         let tensor_b = Tensor::from_vec(ndim_vec::ndim_vec_3d::<u8>(&[100, 10, 1], true)).unwrap();
+//         let pyarray_a = py_ndarray::tensor_to_pyarray(py, &tensor_a).unwrap();
+//         let pyarray_b = py_ndarray::tensor_to_pyarray(py, &tensor_b).unwrap();
+//         let tensor_b = tensor_b.view();
+
+//         group.bench_function("[100x10x1]:add_aarch64", |bench| {
+//             bench.iter(|| {
+//                 let _ = tensor_a.add_aarch64(&tensor_b);
+//             })
+//         });
+
+//         group.bench_function("[100x10x1]:add_generic", |bench| {
+//             bench.iter(|| {
+//                 let _ = tensor_a.add_generic(&tensor_b);
+//             })
+//         });
+
+//         let np = PyModule::import(py, "numpy").unwrap();
+//         let np_add = np.getattr("add").unwrap();
+//         group.bench_function("[100x10x1]:numpy", |bench| {
+//             bench.iter(|| {
+//                 let _ = np_add.call1((&pyarray_a, &pyarray_b));
+//             })
+//         });
+
+//         /* Compare dataset performance: 1000x100x10 */
+
+//         let tensor_a =
+//             Tensor::from_vec(ndim_vec::ndim_vec_3d::<u8>(&[1000, 100, 10], true)).unwrap();
+//         let tensor_b =
+//             Tensor::from_vec(ndim_vec::ndim_vec_3d::<u8>(&[1000, 100, 10], true)).unwrap();
+//         let pyarray_a = py_ndarray::tensor_to_pyarray(py, &tensor_a).unwrap();
+//         let pyarray_b = py_ndarray::tensor_to_pyarray(py, &tensor_b).unwrap();
+//         let tensor_b = tensor_b.view();
+
+//         group.bench_function("[1000x100x10]:add_aarch64", |bench| {
+//             bench.iter(|| {
+//                 let _ = tensor_a.add_aarch64(&tensor_b);
+//             })
+//         });
+
+//         group.bench_function("[1000x100x10]:add_generic", |bench| {
+//             bench.iter(|| {
+//                 let _ = tensor_a.add_generic(&tensor_b);
+//             })
+//         });
+
+//         let np = PyModule::import(py, "numpy").unwrap();
+//         let np_add = np.getattr("add").unwrap();
+//         group.bench_function("[1000x100x10]:numpy", |bench| {
+//             bench.iter(|| {
+//                 let _ = np_add.call1((&pyarray_a, &pyarray_b));
+//             })
+//         });
+
+//         /* Compare dataset performance: 1000x100x100 */
+//         let tensor_a =
+//             Tensor::from_vec(ndim_vec::ndim_vec_3d::<u8>(&[1000, 100, 100], true)).unwrap();
+//         let tensor_b =
+//             Tensor::from_vec(ndim_vec::ndim_vec_3d::<u8>(&[1000, 100, 100], true)).unwrap();
+//         let pyarray_a = py_ndarray::tensor_to_pyarray(py, &tensor_a).unwrap();
+//         let pyarray_b = py_ndarray::tensor_to_pyarray(py, &tensor_b).unwrap();
+//         let tensor_b = tensor_b.view();
+
+//         group.bench_function("[1000x100x100]:add_aarch64", |bench| {
+//             bench.iter(|| {
+//                 let _ = tensor_a.add_aarch64(&tensor_b);
+//             })
+//         });
+
+//         group.bench_function("[1000x100x100]:add_generic", |bench| {
+//             bench.iter(|| {
+//                 let _ = tensor_a.add_generic(&tensor_b);
+//             })
+//         });
+
+//         let np = PyModule::import(py, "numpy").unwrap();
+//         let np_add = np.getattr("add").unwrap();
+//         group.bench_function("[1000x100x100]:numpy", |bench| {
+//             bench.iter(|| {
+//                 let _ = np_add.call1((&pyarray_a, &pyarray_b));
+//             })
+//         });
+//         group.finish();
+//     });
+
+//     display_results("bench_add_aarch64");
+// }
+
+fn bench_add_aarch64_f32(c: &mut Criterion) {
     pyo3::prepare_freethreaded_python();
     Python::with_gil(|py| {
         std::env::set_var("OMP_NUM_THREADS", "1");
@@ -188,5 +289,5 @@ fn display_results(bench_name: &str) {
     table.printstd();
 }
 
-criterion_group!(benches, bench_add_aarch64);
+criterion_group!(benches, bench_add_aarch64_f32);
 criterion_main!(benches);

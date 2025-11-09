@@ -1,8 +1,9 @@
+use super::TensorArithmetic;
 use crate::tensor::*;
 
 impl<'a, U, S> TensorBase<'a, U, S>
 where
-    U: TensorTypeNumeric,
+    U: TensorTypeNumeric + TensorArithmetic<U>,
     S: TensorStorage<U>,
 {
     pub fn add_generic(&self, tensor_b: &TensorView<'_, U>) -> Result<Tensor<'static, U>, Error> {

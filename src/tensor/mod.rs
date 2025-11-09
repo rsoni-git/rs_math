@@ -48,6 +48,11 @@ pub type Tensor<'a, U> = TensorBase<'a, U, Vec<U, TensorAllocator>>;
 pub type TensorView<'a, U> = TensorBase<'a, U, &'a [U]>;
 pub type TensorViewMut<'a, U> = TensorBase<'a, U, &'a mut [U]>;
 
+pub trait TensorAsView<'a, U> {
+    fn as_view(&'a self) -> TensorView<'a, U>;
+}
+
+
 #[derive(Debug)]
 pub enum Error {
     InvalidAxis {

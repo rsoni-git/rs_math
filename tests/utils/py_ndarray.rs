@@ -3,8 +3,8 @@ use numpy::{IntoPyArray, PyArrayDyn, PyArrayMethods, PyUntypedArrayMethods};
 use pyo3::{exceptions::PyValueError, Bound, PyResult, Python};
 use rand::distr::uniform::SampleUniform;
 use rs_math::tensor::{
-    arithmetic::AddAArch64, Error, Tensor, TensorBase, TensorStorage, TensorStorageMut,
-    TensorTypeNumeric,
+    arithmetic::{AddAArch64, TensorArithmetic},
+    Error, Tensor, TensorBase, TensorStorage, TensorStorageMut, TensorTypeNumeric,
 };
 #[path = "ndim_vec.rs"]
 mod ndim_vec;
@@ -50,7 +50,12 @@ where
 
 pub fn add_and_verify<U>(tensor_a: &Tensor<U>, tensor_b: &Tensor<U>)
 where
-    U: TensorTypeNumeric + AddAArch64<U> + From<u8> + numpy::Element + SampleUniform + 'static,
+    U: TensorTypeNumeric
+        + TensorArithmetic<U>
+        + From<u8>
+        + numpy::Element
+        + SampleUniform
+        + 'static,
 {
     pyo3::prepare_freethreaded_python();
     Python::with_gil(|py| {

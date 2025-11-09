@@ -5,8 +5,8 @@ use std::ops::Range;
 use crate::tensor::TensorAllocator;
 
 use super::{
-    Error, Tensor, TensorBase, TensorStorage, TensorStorageMut, TensorTypeNumeric, TensorView,
-    TensorViewMut,
+    Error, Tensor, TensorAsView, TensorBase, TensorStorage, TensorStorageMut, TensorTypeNumeric,
+    TensorView, TensorViewMut,
 };
 
 pub trait TensorFromNDim<T, U> {
@@ -748,5 +748,15 @@ where
             _u: PhantomData,
             _s: PhantomData,
         }
+    }
+}
+
+impl<'a, U, S> TensorAsView<'a, U> for TensorBase<'a, U, S>
+where
+    U: TensorTypeNumeric,
+    S: TensorStorage<U>,
+{
+    fn as_view(&'a self) -> TensorView<'a, U> {
+        self.view()
     }
 }
