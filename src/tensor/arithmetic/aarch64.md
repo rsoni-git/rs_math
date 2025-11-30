@@ -13,7 +13,7 @@
 
 <br>
 
-### NEON Data Types
+### Data Types
 NEON supports multiple interpretation modes for the same binary contents:
 
 - Signed integers: S8, S16, S32, S64
@@ -23,9 +23,18 @@ NEON supports multiple interpretation modes for the same binary contents:
 
 <br>
 
-### NEON: Register state and ABI rules
+### Register state and ABI rules
 | Registers |                 Classification                | Use Freely? |
 |-----------|-----------------------------------------------|-------------|
 | V0-v7     | Argument/return value registers               | Yes         |
 | V8 - V15  | Callee-saved (Must be preserved across calls) | Restore     |
 | V16 - V31 | Temporary (caller-saved)                      | Yes         |
+
+
+### Suffixes
+| Suffix |          Meaning          | Total Lanes |        Lane Size      |
+|--------|---------------------------|-------------|-----------------------|
+|  .16b  | 16-bytes                  |  16 lanes   | 8-bit (16 x 8 = 128)  |
+|  .8h   | 8 halfwords               |  8 lanes    | 16-bit (8 x 16 = 128) |
+|  .4s   | 4 single-precision floats |  4 lanes    | 32-bit (32 x 4 = 128) |
+|  .2d   | 2 double-precision floats |  2 lanes    | 64-bit (64 x 2 = 128) |
