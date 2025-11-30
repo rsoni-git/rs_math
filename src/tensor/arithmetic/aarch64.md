@@ -31,7 +31,7 @@ NEON supports multiple interpretation modes for the same binary contents:
 | V16 - V31 | Temporary (caller-saved)                      | Yes         |
 
 
-### Suffixes
+### Vector arrangement specifier/suffixes
 | Suffix |          Meaning          | Total Lanes |        Lane Size      |
 |--------|---------------------------|-------------|-----------------------|
 |  .16b  | 16-bytes                  |  16 lanes   | 8-bit (16 x 8 = 128)  |
